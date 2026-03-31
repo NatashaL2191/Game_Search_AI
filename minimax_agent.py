@@ -38,3 +38,27 @@ def min_value(state):
         child = state.make_move(move)
         v = min(v, max_value(child))
     return v
+
+def max_value_ab(state, alpha, beta):
+    if state.is_terminal():
+        return state.utility()
+    v = float('-inf')
+    for move in state.get_legal_moves():
+        child = state.make_move(move)
+        v = max(v, min_value_ab(child, alpha, beta))
+        if v >= beta:  # Beta cutoff
+            return v
+        alpha = max(alpha, v)
+    return v
+
+def min_value_ab(state, alpha, beta):
+    if state.is_terminal():
+        return state.utility()
+    v = float('inf')
+    for move in state.get_legal_moves():
+        child = state.make_move(move)
+        v = min(v, max_value_ab(child, alpha, beta))
+        if v <= alpha:  # Alpha cutoff
+            return v
+        beta = min(beta, v)
+    return v
