@@ -1,21 +1,25 @@
-
-
 import random
 import time
 from Game import TicTacToe
-from minimax_agent import minimax_ab
+import minimax_agent
 from mcts_agent import mcts
 
+# --- Agent wrappers ---
 
-#Agent wrappers
+
 def random_agent(state):
     """Pick a uniformly random legal move."""
     return random.choice(state.get_legal_moves())
 
 
-def minimax_agent(state):
+def minimax_agent_wrapper(state):
+    """Wrapper for plain minimax."""
+    return minimax_agent.minimax(state)
+
+
+def minimax_ab_agent_wrapper(state):
     """Wrapper for alpha-beta minimax."""
-    return minimax_ab(state)
+    return minimax_agent.minimax_ab(state)
 
 
 def mcts_agent(iterations=1000):
@@ -25,8 +29,9 @@ def mcts_agent(iterations=1000):
     agent.__name__ = f"MCTS({iterations})"
     return agent
 
+# --- Single game ---
 
-#Single game 
+
 def play_game(x_agent, o_agent):
     """
     Play one game. x_agent and o_agent are callables: state -> move.
@@ -46,13 +51,13 @@ def play_game(x_agent, o_agent):
             t0 = time.perf_counter()
             move = o_agent(state)
             o_time += time.perf_counter() - t0
-
         state = state.make_move(move)
 
     return state.utility(), x_time, o_time
 
+# --- Tournament ---
 
-#Tournament
+
 def run_matchup(x_agent, o_agent, n_games=100, label=None):
     """
     Play n_games between x_agent and o_agent.
@@ -89,12 +94,13 @@ def run_matchup(x_agent, o_agent, n_games=100, label=None):
 
     return x_wins, o_wins, draws
 
+# --- Timing Experiment ---
 
-# Part 3.2: Timing vs iteration count 
+
 def timing_experiment(iteration_counts=(100, 500, 1000, 5000, 10000), n_games=10):
     """
     Measure average time per move for MCTS at different iteration counts.
-    Compare against minimax.
+    Compare against minimax alpha-beta.
     """
     print("\n" + "=" * 55)
     print("  MCTS Timing Experiment")
@@ -102,7 +108,7 @@ def timing_experiment(iteration_counts=(100, 500, 1000, 5000, 10000), n_games=10
     print(f"  {'Agent':<22} {'Avg time/game':>14}  {'Avg time/move':>14}")
     print(f"  {'-'*22}  {'-'*14}  {'-'*14}")
 
-    # Minimax baseline
+    # Minimax alpha-beta baseline
     total = 0.0
     move_total = 0
     for _ in range(n_games):
@@ -110,7 +116,7 @@ def timing_experiment(iteration_counts=(100, 500, 1000, 5000, 10000), n_games=10
         moves_made = 0
         while not state.is_terminal():
             t0 = time.perf_counter()
-            move = minimax_ab(state)
+            move = minimax_ab_agent_wrapper(state)
             total += time.perf_counter() - t0
             state = state.make_move(move)
             moves_made += 1
@@ -136,16 +142,17 @@ def timing_experiment(iteration_counts=(100, 500, 1000, 5000, 10000), n_games=10
             move_total += moves_made
         avg_game = total / n_games
         avg_move = total / move_total
-        print(f"  {f'MCTS({iters})':<22} {avg_game:>14.4f}s  {avg_move:>14.6f}s")
+        print(f"{f'MCTS({iters})':<22} {avg_game:>14.4f}s  {avg_move:>14.6f}s")
 
 
-#Main 
+# --- Main ---
 if __name__ == '__main__':
     N = 100  # games per matchup
 
     # Give agents display names
-    minimax_agent.__name__ = "Minimax"
     random_agent.__name__ = "Random"
+    minimax_agent_wrapper.__name__ = "Minimax"
+    minimax_ab_agent_wrapper.__name__ = "Minimax_AB"
 
     mcts1000 = mcts_agent(1000)
     mcts1000.__name__ = "MCTS(1000)"
@@ -154,21 +161,34 @@ if __name__ == '__main__':
     print("  TOURNAMENT — Tic-Tac-Toe")
     print("=" * 55)
 
-    # Matchup 23: Minimax (X) vs Random (O)
-    run_matchup(minimax_agent, random_agent, N,
-                label="Minimax (X) vs Random (O)")
+    # --- Node counting on empty board ---
+    print("\nRunning node count on empty board...")
 
-    # Matchup 24: MCTS-1000 (X) vs Random (O)
+    minimax_agent.nodes_minimax = 0
+    minimax_agent.nodes_ab = 0
+
+    # Plain minimax
+    minimax_agent_wrapper(TicTacToe())
+    print(f"Plain minimax nodes evaluated: {minimax_agent.nodes_minimax}")
+
+    # Alpha-beta minimax
+    minimax_ab_agent_wrapper(TicTacToe())
+    print(f"Alpha-beta minimax nodes evaluated: {minimax_agent.nodes_ab}")
+
+    # Percentage pruned
+    pruned_pct = (minimax_agent.nodes_minimax -
+                  minimax_agent.nodes_ab) / minimax_agent.nodes_minimax * 100
+    print(f"Percentage of nodes pruned: {pruned_pct:.2f}%")
+
+    # --- Matchups ---
+    run_matchup(minimax_ab_agent_wrapper, random_agent, N,
+                label="Minimax_AB (X) vs Random (O)")
     run_matchup(mcts1000, random_agent, N,
                 label="MCTS(1000) (X) vs Random (O)")
-
-    # Matchup 25: Minimax (X) vs MCTS-1000 (O)
-    run_matchup(minimax_agent, mcts1000, N,
+    run_matchup(minimax_ab_agent_wrapper, mcts1000, N,
+                label="Minimax (X) vs MCTS(1000) (O)")
+    run_matchup(mcts1000, minimax_ab_agent_wrapper, N,
                 label="Minimax (X) vs MCTS(1000) (O)")
 
-    # Matchup 26: MCTS-1000 (X) vs Minimax (O)
-    run_matchup(mcts1000, minimax_agent, N,
-                label="MCTS(1000) (X) vs Minimax (O)")
-
-    # Part 3.2: timing experiment
+    # --- Timing experiment ---
     timing_experiment()
