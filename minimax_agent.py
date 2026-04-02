@@ -1,7 +1,6 @@
 nodes_minimax = 0
 nodes_ab = 0
 
-
 def minimax(state):
     """Return the best move for the current player (no pruning)."""
     if state.current_player == 1:
@@ -78,7 +77,7 @@ def minimax_ab(state):
         return best_move
 
 
-def max_value_ab(state, alpha=float('-inf'), beta=float('inf')):
+def max_value_ab(state, alpha, beta):
     global nodes_ab
     nodes_ab += 1
     if state.is_terminal():
@@ -93,7 +92,7 @@ def max_value_ab(state, alpha=float('-inf'), beta=float('inf')):
     return v
 
 
-def min_value_ab(state, alpha=float('-inf'), beta=float('inf')):
+def min_value_ab(state, alpha, beta):
     global nodes_ab
     nodes_ab += 1
     if state.is_terminal():
