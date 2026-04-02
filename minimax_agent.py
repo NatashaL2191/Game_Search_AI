@@ -1,3 +1,7 @@
+nodes_minimax = 0
+nodes_ab = 0
+
+
 def minimax(state):
     """Return the best move for the current player (no pruning)."""
     if state.current_player == 1:
@@ -23,6 +27,8 @@ def minimax(state):
 
 
 def max_value(state):
+    global nodes_minimax
+    nodes_minimax += 1
     if state.is_terminal():
         return state.utility()
     v = float('-inf')
@@ -33,6 +39,8 @@ def max_value(state):
 
 
 def min_value(state):
+    global nodes_minimax
+    nodes_minimax += 1
     if state.is_terminal():
         return state.utility()
     v = float('inf')
@@ -43,12 +51,12 @@ def min_value(state):
 
 
 def minimax_ab(state):
-    """Return the best move for the current player using alpha-beta pruning."""
-    if state.current_player == 1:
+    """Top-level function with alpha-beta pruning."""
+    alpha = float('-inf')
+    beta = float('inf')
+    if state.current_player == 1:  # MAX
         best_value = float('-inf')
         best_move = None
-        alpha = float('-inf')
-        beta = float('inf')
         for move in state.get_legal_moves():
             child = state.make_move(move)
             value = min_value_ab(child, alpha, beta)
@@ -60,8 +68,6 @@ def minimax_ab(state):
     else:
         best_value = float('inf')
         best_move = None
-        alpha = float('-inf')
-        beta = float('inf')
         for move in state.get_legal_moves():
             child = state.make_move(move)
             value = max_value_ab(child, alpha, beta)
@@ -72,7 +78,9 @@ def minimax_ab(state):
         return best_move
 
 
-def max_value_ab(state, alpha, beta):
+def max_value_ab(state, alpha=float('-inf'), beta=float('inf')):
+    global nodes_ab
+    nodes_ab += 1
     if state.is_terminal():
         return state.utility()
     v = float('-inf')
@@ -85,7 +93,9 @@ def max_value_ab(state, alpha, beta):
     return v
 
 
-def min_value_ab(state, alpha, beta):
+def min_value_ab(state, alpha=float('-inf'), beta=float('inf')):
+    global nodes_ab
+    nodes_ab += 1
     if state.is_terminal():
         return state.utility()
     v = float('inf')
