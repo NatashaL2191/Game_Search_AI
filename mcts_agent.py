@@ -29,9 +29,9 @@ class MCTSNode:
         return max(self.children, key=lambda child: child.visits).move
 
 
-# ---------------------------------------------------------------------------
-# The four MCTS steps
-# ---------------------------------------------------------------------------
+
+#MCTS steps
+
 
 def select(node):
     """
@@ -91,9 +91,9 @@ def backpropagate(node, result):
         current = current.parent
 
 
-# ---------------------------------------------------------------------------
+
 # Main MCTS loop
-# ---------------------------------------------------------------------------
+
 
 def mcts(state, iterations=1000):
     """

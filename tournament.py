@@ -4,7 +4,7 @@ from Game import TicTacToe
 import minimax_agent
 from mcts_agent import mcts
 
-# --- Agent wrappers ---
+#Agent wrappers
 
 
 def random_agent(state):
@@ -29,7 +29,7 @@ def mcts_agent(iterations=1000):
     agent.__name__ = f"MCTS({iterations})"
     return agent
 
-# --- Single game ---
+#Single game
 
 
 def play_game(x_agent, o_agent):
@@ -55,7 +55,7 @@ def play_game(x_agent, o_agent):
 
     return state.utility(), x_time, o_time
 
-# --- Tournament ---
+#Tournament
 
 
 def run_matchup(x_agent, o_agent, n_games=100, label=None):
@@ -94,7 +94,7 @@ def run_matchup(x_agent, o_agent, n_games=100, label=None):
 
     return x_wins, o_wins, draws
 
-# --- Timing Experiment ---
+#Timing Experiment
 
 
 def timing_experiment(iteration_counts=(100, 500, 1000, 5000, 10000), n_games=10):
@@ -145,7 +145,7 @@ def timing_experiment(iteration_counts=(100, 500, 1000, 5000, 10000), n_games=10
         print(f"{f'MCTS({iters})':<22} {avg_game:>14.4f}s  {avg_move:>14.6f}s")
 
 
-# --- Main ---
+#Main
 if __name__ == '__main__':
     N = 100  # games per matchup
 
@@ -161,7 +161,7 @@ if __name__ == '__main__':
     print("  TOURNAMENT — Tic-Tac-Toe")
     print("=" * 55)
 
-    # --- Node counting on empty board ---
+    #Node counting on empty board
     print("\nRunning node count on empty board...")
 
     minimax_agent.nodes_minimax = 0
@@ -180,7 +180,7 @@ if __name__ == '__main__':
                   minimax_agent.nodes_ab) / minimax_agent.nodes_minimax * 100
     print(f"Percentage of nodes pruned: {pruned_pct:.2f}%")
 
-    # --- Matchups ---
+    #Matchups
     run_matchup(minimax_ab_agent_wrapper, random_agent, N,
                 label="Minimax_AB (X) vs Random (O)")
     run_matchup(mcts1000, random_agent, N,
@@ -190,5 +190,5 @@ if __name__ == '__main__':
     run_matchup(mcts1000, minimax_ab_agent_wrapper, N,
                 label="Minimax (X) vs MCTS(1000) (O)")
 
-    # --- Timing experiment ---
+    #Timing experiment
     timing_experiment()
